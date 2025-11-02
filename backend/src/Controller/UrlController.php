@@ -45,6 +45,10 @@ final readonly class UrlController
             return new JsonResponse(['error' => $e->getMessage()], 400);
         }
 
+        if (stripos($canonical, rtrim($this->shortener_domain, '/') . '/r/') === 0) {
+            return new JsonResponse(['error' => 'Self-redirects are not allowed'], 400);
+        }
+
         $existing = $this->repo->findOneByCanonicalUrl($canonical);
         if ($existing) {
             return new JsonResponse($this->present($existing), 200);
