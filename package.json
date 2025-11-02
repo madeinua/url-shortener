@@ -1,7 +1,7 @@
 {
     "private": true,
     "scripts": {
-        "test": "cd backend && docker compose exec -e APP_ENV=test php ./vendor/bin/phpunit",
+        "test": "cd backend && php bin/console cache:clear && docker compose exec -e APP_ENV=test php ./vendor/bin/phpunit",
         "build": "cd frontend && npm run build",
         "dev": "cd frontend && npm run dev"
     }

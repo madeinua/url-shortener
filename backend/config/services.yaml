@@ -20,4 +20,5 @@ services:
   App\Controller\:
     resource: '../src/Controller/'
     public: true
+    autowire: true
     tags: ['controller.service_arguments']
