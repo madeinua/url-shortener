@@ -8,24 +8,33 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 abstract class FunctionalWebTestCase extends WebTestCase
 {
     protected KernelBrowser $client;
+    private EntityManagerInterface $em;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // IMPORTANT: let createClient() boot the kernel --> otherwise this triggers error
         self::ensureKernelShutdown();
         $this->client = static::createClient();
 
-        /** @var EntityManagerInterface $em */
-        $em = static::getContainer()->get(EntityManagerInterface::class);
-        $conn = $em->getConnection();
+        $this->client->disableReboot();
 
-        try {
-            $conn->executeStatement('TRUNCATE TABLE short_urls');
-        } catch (\Throwable) {
-            $conn->executeStatement('DELETE FROM short_urls');
-            $conn->executeStatement('ALTER TABLE short_urls AUTO_INCREMENT = 1');
+        $this->em = static::getContainer()->get(EntityManagerInterface::class);
+        $conn = $this->em->getConnection();
+
+        if (!$conn->isTransactionActive()) {
+            $conn->beginTransaction();
         }
+    }
+
+    protected function tearDown(): void
+    {
+        $conn = $this->em->getConnection();
+        if ($conn->isTransactionActive()) {
+            $conn->rollBack();
+        }
+
+        parent::tearDown();
+        self::ensureKernelShutdown();
     }
 }
