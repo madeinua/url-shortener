@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Repository\ShortUrlRepository;
 use App\Service\ShorteningService;
 use App\Service\UrlCanonicalizer;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validation;
@@ -19,12 +21,24 @@ final readonly class UrlController
         private ShortUrlRepository $repo,
         private UrlCanonicalizer $canonicalizer,
         private string $shortener_domain = 'http://localhost:8080',
+        #[Autowire(service: 'limiter.shorten_ip')] private RateLimiterFactory $shortenLimiter,
     ) {
     }
 
     #[Route('/urls', name: 'api_shorten', methods: ['POST'])]
     public function shorten(Request $request): JsonResponse
     {
+        // --- Rate-limit per IP ---
+        $limiter = $this->shortenLimiter->create($request->getClientIp() ?? 'anon');
+        $limit = $limiter->consume();
+        if (!$limit->isAccepted()) {
+            $headers = [
+                'Retry-After' => max(1, $limit->getRetryAfter()->getTimestamp() - time())
+            ];
+
+            return new JsonResponse(['error' => 'Too many requests'], 429, $headers);
+        }
+
         $data = json_decode($request->getContent(), true) ?? [];
         $url = preg_replace('/^\s+|\s+$/u', '', (string) ($data['url'] ?? ''));
 

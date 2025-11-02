@@ -4,6 +4,7 @@ namespace App\Tests\Functional;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 abstract class FunctionalWebTestCase extends WebTestCase
 {
@@ -18,6 +19,13 @@ abstract class FunctionalWebTestCase extends WebTestCase
         $this->client = static::createClient();
 
         $this->client->disableReboot();
+
+        // Reset common keys just in case
+        /** @var RateLimiterFactory $f */
+        $f = static::getContainer()->get('limiter.shorten_ip');
+        foreach (['127.0.0.1', '::1', 'anon'] as $k) {
+            $f->create($k)->reset();
+        }
 
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $conn = $this->em->getConnection();

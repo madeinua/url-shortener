@@ -1,0 +1,13 @@
+framework:
+  rate_limiter:
+    shorten_ip:
+      policy: sliding_window
+      limit: 20
+      interval: '1 minute'
+
+    redirect_ip:
+      policy: token_bucket
+      limit: 60
+      rate:
+        interval: '1 second'
+        amount: 30
