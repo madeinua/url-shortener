@@ -16,7 +16,7 @@ export default function ShortenForm({onCreated, notify}: ShortenFormProps) {
     async function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        if (!url.trim()) {
+        if (!url.trim() || loading) {
             return;
         }
 
@@ -29,23 +29,46 @@ export default function ShortenForm({onCreated, notify}: ShortenFormProps) {
                 body: JSON.stringify({url}),
             });
 
-            const existed = res.status === 200;
-            const data: ShortUrl = await res.json();
+            const contentType = res.headers.get('content-type') || '';
+            const payload = contentType.includes('application/json')
+                ? await res.json()
+                : await res.text();
 
-            onCreated(data, existed);
-
-            if (existed) {
-                notify('Already shortened - showing existing link.');
-            } else {
-                notify('Short URL created.');
+            if (!res.ok) {
+                const msg =
+                    (payload && typeof payload === 'object' && 'error' in payload && (payload as any).error) ||
+                    (typeof payload === 'string' && payload) ||
+                    `Request failed with status ${res.status}`;
+                notify(msg);
+                return;
             }
 
+            const existed = res.status === 200;
+
+            if (!isShortUrl(payload)) {
+                notify('Unexpected response from server.');
+                return;
+            }
+
+            onCreated(payload, existed);
+            notify(existed ? 'Already shortened - showing existing link.' : 'Short URL created.');
             setUrl('');
         } catch (err: any) {
-            notify(err.message || 'Failed to shorten URL');
+            notify(err?.message ?? 'Failed to shorten URL');
         } finally {
             setLoading(false);
         }
+    }
+
+    function isShortUrl(x: any): x is ShortUrl {
+        return (
+            x &&
+            typeof x === 'object' &&
+            typeof x.code === 'string' &&
+            typeof x.short_url === 'string' &&
+            typeof x.url === 'string' &&
+            typeof x.clicks === 'number'
+        );
     }
 
     return (
