@@ -18,6 +18,10 @@ final class UrlCanonicalizer
             throw new InvalidArgumentException('Invalid URL');
         }
 
+        if (isset($parts['user']) || isset($parts['pass'])) {
+            throw new InvalidArgumentException('Credentials in URL are not allowed');
+        }
+
         $scheme = strtolower($parts['scheme']);
         if (!in_array($scheme, ['http', 'https'], true)) {
             throw new InvalidArgumentException('Only http/https are allowed');

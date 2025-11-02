@@ -116,4 +116,41 @@ final class ApiBehaviorTest extends FunctionalWebTestCase
         $this->client->request('GET', '/r/NoSuchCode');
         $this->assertResponseStatusCodeSame(404);
     }
+
+    public function testSelfRedirectIsRejected(): void
+    {
+        $sd = rtrim(static::getContainer()->getParameter('shortener_domain'), '/');
+        $payload = ['url' => $sd . '/r/ABC1234'];
+
+        $this->client->request(
+            'POST',
+            '/api/urls',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode($payload)
+        );
+
+        $this->assertResponseStatusCodeSame(400);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertStringContainsStringIgnoringCase('self-redirect', $data['error']);
+    }
+
+    public function testUserinfoInUrlIsRejected(): void
+    {
+        $payload = ['url' => 'https://user:secret@example.com/hidden'];
+
+        $this->client->request(
+            'POST',
+            '/api/urls',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode($payload)
+        );
+
+        $this->assertResponseStatusCodeSame(400);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertStringContainsStringIgnoringCase('credential', $data['error']);
+    }
 }
