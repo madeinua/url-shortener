@@ -4,6 +4,8 @@
 Thumbs.db
 .vscode/
 .idea/
+.env
+*/.env
 
 # Docker
 db_data/
