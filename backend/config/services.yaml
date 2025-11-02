@@ -1,0 +1,23 @@
+parameters:
+  shortener_domain: '%env(SHORTENER_DOMAIN)%'
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    bind:
+      string $shortener_domain: '%shortener_domain%'
+
+  # Auto-register everything except the usual exclusions
+  App\:
+    resource: '../src/'
+    exclude:
+      - '../src/DependencyInjection/'
+      - '../src/Entity/'
+      - '../src/Kernel.php'
+
+  # Controllers must be public and tagged so Symfony can fetch them
+  App\Controller\:
+    resource: '../src/Controller/'
+    public: true
+    tags: ['controller.service_arguments']

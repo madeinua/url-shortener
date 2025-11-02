@@ -1,0 +1,53 @@
+services:
+  php:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: urlshortener-php
+    working_dir: /var/www/backend
+    volumes:
+      - ./backend:/var/www/backend
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: "mysql://bitly:bitly@db:3306/bitly?charset=utf8mb4"
+      SHORTENER_DOMAIN: "http://localhost:8080"
+    depends_on:
+      - db
+    networks: [ web ]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: urlshortener-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./backend/public:/var/www/backend/public:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on: [ php ]
+    networks: [ web ]
+
+  db:
+    image: mariadb:11.4
+    container_name: urlshortener-db
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: bitly
+      MARIADB_USER: bitly
+      MARIADB_PASSWORD: bitly
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -proot || exit 1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [ web ]
+
+volumes:
+  db_data: { }
+
+networks:
+  web: { }
