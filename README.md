@@ -14,6 +14,9 @@ A tiny, deterministic URL shortener: Symfony API for creating short codes, a red
 ## 1) Backend (Symfony) — build & run
 
 ```bash
+cd backend
+cp .env.example .env
+
 # From repo root
 docker compose up -d --build
 
@@ -125,7 +128,7 @@ curl -i http://localhost:8080/r/Ab12xyz
 ### Get details: `GET /api/urls/{code}`
 
 ```bash
-curl -s http://localhost:8080/api/urls/Ab12xyz | jq
+curl -s http://localhost:8080/api/urls/Ab12xyz
 ```
 
 **Response `200`**
@@ -146,7 +149,7 @@ curl -s http://localhost:8080/api/urls/Ab12xyz | jq
 ### Get stats: `GET /api/urls/{code}/stats`
 
 ```bash
-curl -s http://localhost:8080/api/urls/Ab12xyz/stats | jq
+curl -s http://localhost:8080/api/urls/Ab12xyz/stats
 ```
 
 **Response `200`**
@@ -170,7 +173,7 @@ Query params:
 - `offset` (default 0)
 
 ```bash
-curl -s "http://localhost:8080/api/urls?limit=50&offset=0" | jq
+curl -s "http://localhost:8080/api/urls?limit=50&offset=0"
 ```
 
 **Response `200`**

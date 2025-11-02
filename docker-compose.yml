@@ -8,9 +8,9 @@ services:
     volumes:
       - ./backend:/var/www/backend
     environment:
-      APP_ENV: dev
-      DATABASE_URL: "mysql://bitly:bitly@db:3306/bitly?charset=utf8mb4"
-      SHORTENER_DOMAIN: "http://localhost:8080"
+      APP_ENV: ${APP_ENV:-dev}
+      DATABASE_URL: ${DATABASE_URL:-mysql://bitly:bitly@db:3306/bitly?charset=utf8mb4}
+      SHORTENER_DOMAIN: ${SHORTENER_DOMAIN:-http://localhost:8080}
     depends_on:
       - db
     networks: [ web ]
@@ -31,16 +31,16 @@ services:
     image: mariadb:11.4
     container_name: urlshortener-db
     environment:
-      MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: bitly
-      MARIADB_USER: bitly
-      MARIADB_PASSWORD: bitly
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-bitly}
+      MARIADB_USER: ${MARIADB_USER:-bitly}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-bitly}
     ports:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -proot || exit 1" ]
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p$${MARIADB_ROOT_PASSWORD:-root} || exit 1" ]
       interval: 5s
       timeout: 3s
       retries: 20
