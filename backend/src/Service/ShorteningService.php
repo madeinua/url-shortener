@@ -30,7 +30,7 @@ final readonly class ShorteningService
             return $existing;
         }
 
-        for ($len = 7; $len <= 10; $len++) {
+        for ($len = 5; $len <= 20; $len++) {
             $code = $this->codes->generate($canonical, $len);
             $conflict = $this->repo->findOneByCode($code);
             if ($conflict && $conflict->getCanonicalUrl() !== $canonical) {
