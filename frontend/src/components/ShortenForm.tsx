@@ -36,20 +36,22 @@ export default function ShortenForm({onCreated, notify}: ShortenFormProps) {
 
             if (!res.ok) {
                 const msg =
-                    (payload && typeof payload === 'object' && 'error' in payload && (payload as any).error) ||
+                    (payload &&
+                        typeof payload === 'object' &&
+                        'error' in payload &&
+                        (payload as any).error) ||
                     (typeof payload === 'string' && payload) ||
                     `Request failed with status ${res.status}`;
                 notify(msg);
                 return;
             }
 
-            const existed = res.status === 200;
-
             if (!isShortUrl(payload)) {
                 notify('Unexpected response from server.');
                 return;
             }
 
+            const existed = res.status === 200;
             onCreated(payload, existed);
             notify(existed ? 'Already shortened - showing existing link.' : 'Short URL created.');
             setUrl('');
