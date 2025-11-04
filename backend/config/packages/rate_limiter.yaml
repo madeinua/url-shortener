@@ -10,4 +10,4 @@ framework:
       limit: 60
       rate:
         interval: '1 second'
-        amount: 30
+        amount: 1

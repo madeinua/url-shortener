@@ -62,17 +62,7 @@ docker compose restart nginx
 
 ## 3) Tests (PHPUnit)
 
-Create the **test** database once:
-
 ```bash
-docker compose exec db mariadb -uroot -proot \
-  -e "CREATE DATABASE IF NOT EXISTS bitly_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
-
-Apply schema (test env) and run tests:
-
-```bash
-docker compose exec -e APP_ENV=test php bin/console doctrine:schema:update --force -e test
 docker compose exec -e APP_ENV=test php ./vendor/bin/phpunit
 ```
 

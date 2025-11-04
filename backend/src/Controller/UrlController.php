@@ -20,8 +20,8 @@ final readonly class UrlController
         private ShorteningService $shortener,
         private ShortUrlRepository $repo,
         private UrlCanonicalizer $canonicalizer,
-        private string $shortener_domain = 'http://localhost:8080',
         #[Autowire(service: 'limiter.shorten_ip')] private RateLimiterFactory $shortenLimiter,
+        private string $shortener_domain = 'http://localhost:8080',
     ) {
     }
 
